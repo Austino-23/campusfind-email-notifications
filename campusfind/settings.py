@@ -5,7 +5,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-campusfind-development-key-change-before-deployment'
 DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
-ALLOWED_HOSTS = [host.strip() for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '127.0.0.1,localhost').split(',') if host.strip()]
+ALLOWED_HOSTS = [host.strip() for host in os.environ.get('campusfind-email-notifications.onrender.com', '127.0.0.1','localhost').split(',') if host.strip()]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
