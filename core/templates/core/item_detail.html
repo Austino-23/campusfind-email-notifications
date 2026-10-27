@@ -1,0 +1,45 @@
+{% extends 'core/base.html' %}
+{% block title %}Report details — CampusFind{% endblock %}
+{% block content %}
+<main class="page-main container">
+  <div class="page-heading">
+    <div class="eyebrow"><span class="eyebrow-dot"></span>{% if is_admin %}Administrator review{% else %}Your report{% endif %}</div>
+    <h1>Report <span>details</span></h1>
+    <p>Review the information submitted for this lost or found item.</p>
+  </div>
+  <section class="dashboard-section">
+    <div class="section-heading">
+      <div><h2>{{ item.name }}</h2><p>Submitted {{ item.created_at|date:'d M Y, H:i' }}</p></div>
+      <a class="button button-small" href="{% url 'dashboard' %}">Back to dashboard</a>
+    </div>
+    <div class="table-wrap">
+      <table><tbody>
+        <tr><th>Report type</th><td>{{ item.get_report_type_display }}</td></tr>
+        <tr><th>Category</th><td>{{ item.get_category_display }}</td></tr>
+        <tr><th>Location</th><td>{{ item.location }}</td></tr>
+        <tr><th>Date lost/found</th><td>{{ item.item_date|date:'d M Y' }}</td></tr>
+        <tr><th>Description</th><td>{{ item.description|linebreaksbr }}</td></tr>
+        <tr><th>Reported by</th><td>{{ item.reported_by.get_full_name|default:item.reported_by.username }}</td></tr>
+        <tr><th>Contact email</th><td>{% if item.contact_email %}<a href="mailto:{{ item.contact_email }}">{{ item.contact_email }}</a>{% else %}Not provided{% endif %}</td></tr>
+        <tr><th>Status</th><td>{% if item.is_resolved %}<span class="pill resolved">Resolved</span>{% else %}<span class="pill open">Open</span>{% endif %}</td></tr>
+        {% if item.photo %}<tr><th>Photo</th><td><a href="{{ item.photo.url }}" target="_blank" rel="noopener">Open uploaded photo</a></td></tr>{% endif %}
+      </tbody></table>
+    </div>
+    {% if is_admin %}
+    <div class="action-cell" style="margin-top: 1.25rem;">
+      <form method="post" action="{% url 'resolve_item' item.id %}">{% csrf_token %}<button type="submit" class="button button-small">{% if item.is_resolved %}Reopen report{% else %}Mark as resolved{% endif %}</button></form>
+      <form method="post" action="{% url 'delete_item' item.id %}" onsubmit="return confirm('Delete this report and its claims?')">{% csrf_token %}<button type="submit" class="text-button danger-text">Delete report</button></form>
+    </div>
+    {% endif %}
+  </section>
+  {% if is_admin %}
+  <section class="dashboard-section">
+    <div class="section-heading"><div><h2>Ownership claims</h2><p>Claims submitted for this report.</p></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Claimant</th><th>Message</th><th>Status</th><th>Action</th></tr></thead><tbody>
+      {% for claim in claims %}<tr><td>{{ claim.claimant.get_full_name|default:claim.claimant.username }}</td><td>{{ claim.message }}</td><td><span class="pill {{ claim.status }}">{{ claim.get_status_display }}</span></td><td><form method="post" action="{% url 'update_claim' claim.id %}" class="inline-form">{% csrf_token %}<select name="status" aria-label="Claim status"><option value="pending" {% if claim.status == 'pending' %}selected{% endif %}>Pending</option><option value="approved" {% if claim.status == 'approved' %}selected{% endif %}>Approve</option><option value="rejected" {% if claim.status == 'rejected' %}selected{% endif %}>Reject</option></select><button class="text-button" type="submit">Save</button></form></td></tr>
+      {% empty %}<tr><td colspan="4">No claims have been submitted for this report.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </section>
+  {% endif %}
+</main>
+{% endblock %}
